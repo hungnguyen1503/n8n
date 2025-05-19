@@ -2,7 +2,7 @@ version: '3.7'
 services:
   svr_n8n:
     image: n8nio/n8n
-    container_name: cont_n8n
+    container_name: cont_n8n_test
     environment:
       - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
@@ -10,6 +10,7 @@ services:
       - WEBHOOK_URL=https://n8n.hungngquang.xyz/
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_HOST=n8n.hungngquang.xyz
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
     ports:
       - "5678:5678"
     volumes:
