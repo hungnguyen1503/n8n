@@ -12,7 +12,7 @@ START="🟢"
 END="🔴"
 
 # Setup logging
-LOG_FILE="n8n_log_installation.txt"
+LOG_FILE="$HOME/n8n_log_installation.txt"
 exec 1> >(tee -a "$LOG_FILE")
 exec 2> >(tee -a "$LOG_FILE" >&2)
 

@@ -15,5 +15,5 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - ~/vol_n8n:/home/node/.n8n
+      - ./vol_n8n:/home/node/.n8n
     restart: always
