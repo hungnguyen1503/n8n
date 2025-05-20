@@ -51,8 +51,7 @@ check_existing_containers() {
             2)
                 log_message "User chose to force new installation"
                 echo -e "${YELLOW}${WARN} Removing existing containers...${NC}"
-                run_command "docker-compose down"
-                run_command "docker rm -f \$(docker ps -a | grep n8n | awk '{print \$1}')"
+                run_command "docker-compose -f n8n-dockercompose.yaml down -f"
                 return 0
                 ;;
             3)
@@ -236,7 +235,6 @@ fi
 
 # Setup and start n8n
 echo -e "${YELLOW}${START} Starting n8n...${END}${NC}"
-cd vol_n8n
 
 # Check for existing containers before proceeding
 if check_existing_containers; then
