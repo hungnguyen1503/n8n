@@ -241,7 +241,7 @@ cd vol_n8n
 # Check for existing containers before proceeding
 if check_existing_containers; then
     log_message "Downloading n8n docker-compose file"
-    run_command "wget https://raw.githubusercontent.com/hungnguyen1503/n8n/main/n8n-dockercompose.yaml -O docker-compose.yml"
+    run_command "sudo wget https://raw.githubusercontent.com/hungnguyen1503/n8n/main/n8n-dockercompose.yaml -O docker-compose.yml"
     export CURR_DIR=$(pwd)
     log_message "Starting n8n containers"
     run_command "sudo -E docker-compose up -d"
