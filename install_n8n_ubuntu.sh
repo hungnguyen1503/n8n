@@ -51,7 +51,12 @@ check_existing_containers() {
             2)
                 log_message "User chose to force new installation"
                 echo -e "${YELLOW}${WARN} Removing existing containers...${NC}"
-                run_command "docker-compose -f n8n-dockercompose.yaml down -f"
+                run_command "docker-compose -f n8n-dockercompose.yaml down --rmi all --volumes --remove-orphans"
+                run_command "sudo rm -rf ~/vol_n8n"
+                run_command "docker system prune -af"
+                run_command "docker volume prune -f"
+                run_command "docker images | grep n8n | awk '{print \$3}' | xargs -r docker rmi -f"
+                run_command "docker ps -a | grep n8n | awk '{print \$1}' | xargs -r docker rm -f"
                 return 0
                 ;;
             3)
