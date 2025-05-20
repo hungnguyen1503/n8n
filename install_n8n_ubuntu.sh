@@ -240,6 +240,7 @@ echo -e "${YELLOW}${START} Starting n8n...${END}${NC}"
 if check_existing_containers; then
     log_message "Downloading n8n docker-compose file"
     run_command "sudo wget https://raw.githubusercontent.com/hungnguyen1503/n8n/main/n8n-dockercompose.yaml -O docker-compose.yml"
+    export CURR_VOL_DIR=$(pwd)/vol_n8n
     log_message "Starting n8n containers"
     run_command "sudo -E docker-compose up -d"
 else
