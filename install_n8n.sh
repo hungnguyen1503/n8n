@@ -10,6 +10,20 @@ WARN="⚠️"
 ERROR="❌"
 START="🟢"
 END="🔴"
+INFO="ℹ️"
+DOWNLOAD="⬇️"
+INSTALL="🛠️"
+UPDATE="🔄"
+FOLDER="📁"
+DOCKER="🐳"
+COMPOSE="🧩"
+SUCCESS="🟢"
+FAILURE="🔴"
+USER_ICON="👤"
+SYSTEM="🖥️"
+NETWORK="🌐"
+WAIT="⏳"
+FINISH="🏁"
 
 # Setup logging
 LOG_FILE="$HOME/n8n_log_installation.txt"
@@ -77,7 +91,7 @@ check_existing_containers() {
 
 # Check and update system
 log_message "Checking system updates"
-echo -e "${YELLOW}${START} Checking system updates...${END}${NC}"
+echo -e "${YELLOW}${START} ${UPDATE} Checking system updates...${END}${NC}"
 
 # Detect package manager
 if command -v apt-get &> /dev/null; then
@@ -247,14 +261,16 @@ echo -e "${YELLOW}${START} Starting n8n...${END}${NC}"
 if check_existing_containers; then
     log_message "Downloading n8n docker-compose file"
     run_command "sudo wget https://raw.githubusercontent.com/hungnguyen1503/n8n/main/n8n-dockercompose.yaml -O docker-compose.yml"
+    log_message "${DOWNLOAD} Downloaded n8n docker-compose file"
     log_message "Starting n8n containers"
     run_command "sudo -E docker-compose up -d"
+    log_message "${DOCKER} n8n containers started"
 else
     log_message "Skipping container creation as requested"
     echo -e "${GREEN}${CHECK} Skipped container creation${NC}"
 fi
 
 log_message "Installation completed successfully"
-echo -e "${GREEN}${CHECK} Installation completed!${NC}"
-echo -e "${GREEN}${CHECK} Wait a few minutes and test n8n UI in http://localhost:5678/ your browser${NC}"
-echo -e "${GREEN}${CHECK} Installation log saved to: $LOG_FILE${NC}"
+echo -e "${GREEN}${CHECK} ${FINISH} Installation completed!${NC}"
+echo -e "${GREEN}${CHECK} ${WAIT} Wait a few minutes and test n8n UI in http://localhost:5678/ your browser${NC}"
+echo -e "${GREEN}${CHECK} ${INFO} Installation log saved to: $LOG_FILE${NC}"
