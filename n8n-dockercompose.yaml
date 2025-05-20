@@ -3,7 +3,6 @@ services:
   svr_n8n:
     image: n8nio/n8n
     container_name: cont_n8n
-    user: "1000:1000"
     environment:
       - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
@@ -16,5 +15,5 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - ${CURR_DIR}/vol_n8n:/home/node/.n8n
+      - ./vol_n8n:/home/node/.n8n
     restart: always
