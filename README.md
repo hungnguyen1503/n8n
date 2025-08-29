@@ -55,6 +55,7 @@ If you prefer manual installation:
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
+   nano .env  # or use your preferred editor
    ```
 
 3. **Start the services:**
@@ -64,9 +65,29 @@ If you prefer manual installation:
 
 ## 🔧 Configuration
 
+### Environment Setup
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit the `.env` file with your actual values:**
+   ```bash
+   nano .env  # or use your preferred editor
+   ```
+
+3. **Required variables to configure:**
+   - `CLOUDFLARE_TUNNEL_TOKEN`: Get from [Cloudflare Dashboard](https://dash.cloudflare.com/cloudflare-one/tunnels)
+   - `N8N_EDITOR_BASE_URL`: Your domain or localhost URL
+   - `WEBHOOK_URL`: Your webhook base URL
+   - `N8N_HOST`: Your domain name
+
 ### Environment Variables
 
 Create a `.env` file in the project root with the following variables:
+
+> **⚠️ Security Note:** Never commit your actual `.env` file to version control. Use `.env.example` as a template and keep your real credentials secure.
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
@@ -156,6 +177,31 @@ tar -czf n8n_backup_$(date +%Y%m%d_%H%M%S).tar.gz vol_n8n/
 - **File Permissions:** Enforced settings file permissions for security
 - **Secure Cookies:** Configurable secure cookie support
 - **Volume Isolation:** n8n data is isolated in dedicated volumes
+- **Environment Variables:** Sensitive data is stored in `.env` files (excluded from version control)
+
+### Advanced Security Options
+
+For additional security, consider these encryption methods:
+
+#### Option 1: Docker Secrets (Production)
+```bash
+# Create encrypted secrets
+echo "your_cloudflare_token" | docker secret create cloudflare_tunnel_token -
+```
+
+#### Option 2: GPG Encryption
+```bash
+# Encrypt your .env file
+gpg -c .env
+# This creates .env.gpg (encrypted) - commit this instead
+```
+
+#### Option 3: Ansible Vault
+```bash
+# Encrypt with Ansible Vault
+ansible-vault encrypt .env
+# Use: ansible-vault decrypt .env
+```
 
 ## 📚 Documentation
 
