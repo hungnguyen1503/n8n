@@ -24,6 +24,7 @@ SYSTEM="🖥️"
 NETWORK="🌐"
 WAIT="⏳"
 FINISH="🏁"
+SERVICE="🔧"
 
 # Setup logging
 LOG_FILE="$HOME/n8n_log_installation.txt"
@@ -42,6 +43,65 @@ run_command() {
         echo "[PROGRESS] $line" >> "$LOG_FILE"
     done
     return ${PIPESTATUS[0]}
+}
+
+# Function to setup systemd service
+setup_systemd_service() {
+    log_message "Setting up systemd service for n8n"
+    echo -e "${YELLOW}${START} ${SERVICE} Setting up systemd service...${END}${NC}"
+    
+    # Check if we're in the n8n directory
+    if [ ! -f "n8n.service" ]; then
+        log_message "ERROR: n8n.service file not found in current directory"
+        echo -e "${RED}${ERROR} n8n.service file not found. Please run this script from the n8n directory.${NC}"
+        return 1
+    fi
+    
+    # Copy service file to systemd directory
+    log_message "Copying n8n.service to /etc/systemd/system/"
+    if run_command "sudo cp n8n.service /etc/systemd/system/"; then
+        echo -e "${GREEN}${CHECK} Service file copied successfully${NC}"
+    else
+        echo -e "${RED}${ERROR} Failed to copy service file${NC}"
+        return 1
+    fi
+    
+    # Reload systemd daemon
+    log_message "Reloading systemd daemon"
+    if run_command "sudo systemctl daemon-reload"; then
+        echo -e "${GREEN}${CHECK} Systemd daemon reloaded${NC}"
+    else
+        echo -e "${RED}${ERROR} Failed to reload systemd daemon${NC}"
+        return 1
+    fi
+    
+    # Enable the service
+    log_message "Enabling n8n service for auto-start"
+    if run_command "sudo systemctl enable n8n.service"; then
+        echo -e "${GREEN}${CHECK} Service enabled for auto-start${NC}"
+    else
+        echo -e "${RED}${ERROR} Failed to enable service${NC}"
+        return 1
+    fi
+    
+    # Start the service
+    log_message "Starting n8n service"
+    if run_command "sudo systemctl start n8n.service"; then
+        echo -e "${GREEN}${CHECK} Service started successfully${NC}"
+        
+        # Wait a moment and check status
+        sleep 3
+        if run_command "sudo systemctl is-active n8n.service"; then
+            echo -e "${GREEN}${CHECK} Service is running and active${NC}"
+        else
+            echo -e "${YELLOW}${WARN} Service may not be fully started yet${NC}"
+        fi
+    else
+        echo -e "${RED}${ERROR} Failed to start service${NC}"
+        return 1
+    fi
+    
+    return 0
 }
 
 # Check for existing n8n containers
@@ -65,7 +125,7 @@ check_existing_containers() {
             2)
                 log_message "User chose to force new installation"
                 echo -e "${YELLOW}${WARN} Removing existing containers...${NC}"
-                run_command "docker-compose -f n8n-dockercompose.yaml down --volumes --remove-orphans"
+                run_command "docker compose down --volumes --remove-orphans"
                 run_command "docker ps -a | grep n8n | awk '{print \$1}' | xargs -r docker rm -f"
                 run_command "docker volume prune -f"
                 run_command "docker system prune -f"
@@ -259,18 +319,61 @@ echo -e "${YELLOW}${START} Starting n8n...${END}${NC}"
 
 # Check for existing containers before proceeding
 if check_existing_containers; then
-    log_message "Downloading n8n docker-compose file"
-    run_command "sudo wget https://raw.githubusercontent.com/hungnguyen1503/n8n/main/n8n-dockercompose.yaml -O docker-compose.yml"
-    log_message "${DOWNLOAD} Downloaded n8n docker-compose file"
+    log_message "Using local docker-compose.yaml file"
+    # Check if docker-compose.yaml exists in the n8n directory
+    if [ -f "/home/tvbox/n8n/docker-compose.yaml" ]; then
+        log_message "Using existing docker-compose.yaml file"
+        echo -e "${GREEN}${CHECK} Using existing docker-compose.yaml file${NC}"
+    else
+        log_message "ERROR: docker-compose.yaml file not found in /home/tvbox/n8n"
+        echo -e "${RED}${ERROR} docker-compose.yaml file not found. Please ensure the file exists in the n8n directory.${NC}"
+        exit 1
+    fi
+    
     log_message "Starting n8n containers"
-    run_command "sudo -E docker-compose up -d"
-    log_message "${DOCKER} n8n containers started"
+    if run_command "cd /home/tvbox/n8n && docker compose up -d"; then
+        log_message "${DOCKER} n8n containers started"
+        echo -e "${GREEN}${CHECK} n8n containers started successfully${NC}"
+    else
+        log_message "ERROR: Failed to start n8n containers"
+        echo -e "${RED}${ERROR} Failed to start n8n containers${NC}"
+        exit 1
+    fi
 else
     log_message "Skipping container creation as requested"
     echo -e "${GREEN}${CHECK} Skipped container creation${NC}"
+fi
+
+# Change back to n8n directory for systemd service setup
+cd /home/tvbox/n8n
+
+# Setup systemd service
+echo -e "${YELLOW}${START} ${SERVICE} Setting up systemd service...${END}${NC}"
+if setup_systemd_service; then
+    echo -e "${GREEN}${CHECK} Systemd service setup completed successfully${NC}"
+else
+    echo -e "${YELLOW}${WARN} Systemd service setup failed, but n8n is still running${NC}"
+    echo -e "${YELLOW}${WARN} You can manually set up the service later using the n8n.service file${NC}"
 fi
 
 log_message "Installation completed successfully"
 echo -e "${GREEN}${CHECK} ${FINISH} Installation completed!${NC}"
 echo -e "${GREEN}${CHECK} ${WAIT} Wait a few minutes and test n8n UI in http://localhost:5678/ your browser${NC}"
 echo -e "${GREEN}${CHECK} ${INFO} Installation log saved to: $LOG_FILE${NC}"
+
+# Display service management information
+echo -e "${GREEN}${CHECK} ${SERVICE} Systemd service has been set up!${NC}"
+echo -e "${GREEN}${CHECK} n8n will now automatically start on every system reboot${NC}"
+echo -e "${GREEN}${CHECK} Service management commands:${NC}"
+echo -e "${INFO}   Check status: sudo systemctl status n8n.service${NC}"
+echo -e "${INFO}   View logs: sudo journalctl -u n8n.service -f${NC}"
+echo -e "${INFO}   Restart: sudo systemctl restart n8n.service${NC}"
+echo -e "${INFO}   Stop: sudo systemctl stop n8n.service${NC}"
+echo -e "${INFO}   Disable auto-start: sudo systemctl disable n8n.service${NC}"
+
+echo -e "${GREEN}${CHECK} ${FINISH} Installation Summary:${NC}"
+echo -e "${INFO}   ✅ Docker and Docker Compose installed/verified${NC}"
+echo -e "${INFO}   ✅ n8n containers started and running${NC}"
+echo -e "${INFO}   ✅ Systemd service configured for auto-start${NC}"
+echo -e "${INFO}   ✅ n8n accessible at: http://localhost:5678/${NC}"
+echo -e "${INFO}   📝 Installation log: $LOG_FILE${NC}"

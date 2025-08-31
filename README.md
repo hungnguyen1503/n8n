@@ -41,6 +41,8 @@ The script will automatically:
 - ✅ Start n8n and Cloudflare Tunnel services
 - ✅ Handle existing installations gracefully
 
+**💡 Pro Tip:** After installation, you can set up the included systemd service (`n8n.service`) to automatically start n8n on every system reboot. See the [Systemd Service section](#systemd-service-auto-start-on-reboot) for detailed instructions.
+
 ### Manual Installation
 
 If you prefer manual installation:
@@ -125,6 +127,7 @@ The setup includes two main services:
 n8n/
 ├── docker-compose.yaml    # Docker Compose configuration
 ├── install_n8n.sh        # Automated installation script
+├── n8n.service          # Systemd service file for auto-start
 ├── README.md             # This file
 ├── .gitignore           # Git ignore rules
 └── vol_n8n/             # n8n data volume (created during installation)
@@ -147,6 +150,58 @@ docker-compose up -d
 ### Stop Services
 ```bash
 docker-compose down
+```
+
+### Systemd Service (Auto-start on reboot)
+
+To automatically start n8n on every system reboot, you can use the included systemd service:
+
+1. **Copy the service file to systemd directory:**
+   ```bash
+   sudo cp n8n.service /etc/systemd/system/
+   ```
+
+2. **Reload systemd and enable the service:**
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable n8n.service
+   ```
+
+3. **Start the service:**
+   ```bash
+   
+   
+   ```
+
+4. **Check service status:**
+   ```bash
+   sudo systemctl status n8n.service
+   ```
+
+5. **View service logs:**
+   ```bash
+   sudo journalctl -u n8n.service -f
+   ```
+
+**Service Management Commands:**
+```bash
+# Enable auto-start on boot
+sudo systemctl enable n8n.service
+
+# Disable auto-start on boot
+sudo systemctl disable n8n.service
+
+# Start the service
+sudo systemctl start n8n.service
+
+# Stop the service
+sudo systemctl stop n8n.service
+
+# Restart the service
+sudo systemctl restart n8n.service
+
+# Check if service is enabled
+sudo systemctl is-enabled n8n.service
 ```
 
 ### View Logs
